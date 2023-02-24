@@ -1,0 +1,7 @@
+obj-$(CONFIG_VIDEO_IMX219_0)	+= imx219_0.o
+obj-$(CONFIG_VIDEO_IMX219_1)	+= imx219_1.o
+obj-$(CONFIG_VIDEO_IMX385)	+= imx385.o
+obj-$(CONFIG_VIDEO_GC2053)	+= gc2053.o
+obj-$(CONFIG_VIDEO_GC2093)	+= gc2093.o
+obj-$(CONFIG_VIDEO_GC2145)	+= gc2145.o
+obj-$(CONFIG_VIDEO_SC035HGS)	+= sc035hgs.o
