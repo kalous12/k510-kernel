@@ -1,0 +1,580 @@
+/* Copyright (c) 2022, Canaan Bright Sight Co., Ltd
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+*/
+#include "k510_common/k510.dtsi"                    /* k510 soc top, include cpu/cache/memory/noc/axi/ahb/apb/sysctl etc. */
+#include "k510_common/interrupt_provider.dtsi"      /* k510 soc interrupt controller */
+#include "k510_common/interrupt_consumer.dtsi"      /* k510 soc and evb device interrupt consumer */
+#include "k510_common/clock_provider.dtsi"          /* k510 soc clock tree */
+#include "k510_common/clock_consumer.dtsi"          /* k510 soc and evb clock consumer */
+#include "k510_common/reset_provider.dtsi"          /* k510 soc reset provider */
+#include "k510_common/reset_consumer.dtsi"          /* k510 soc reset consumer */
+#include "k510_common/power_provider.dtsi"          /* k510 soc power provider */
+#include "k510_common/power_consumer.dtsi"          /* k510 soc power consumer */
+#include "k510_common/dma_provider.dtsi"            /* k510 soc dma provider */
+#include "k510_common/dma_consumer.dtsi"            /* k510 soc dma consumer */
+#include "k510_common/gpio_provider.dtsi"           /* k510 soc gpio provider */
+//#include "k510_common/gpio_consumer.dtsi"           /* k510 soc gpio consumer */
+#include "k510_common/iomux_provider.dtsi"          /* k510 soc iomux provider */
+#include "k510_common/iomux_consumer.dtsi"          /* k510 soc iomux consumer */
+#include "k510_common/camera-imx219x2.dtsi"          /* camera imx219 */
+//#include "k510_common/camera-gc2053_gc2093.dtsi"          /* camera gc2053/gc2093 */
+//#include "k510_common/camera-gc2093_gc2053.dtsi"          /* camera gc2053/gc2093 */
+//#include "k510_common/camera-gc2093_gc2145.dtsi"          /* camera gc2093/gc2145 */
+//#include "k510_common/camera-gc2145_gc2093.dtsi"          /* camera gc2093/gc2145 */
+//#include "k510_common/camera-sc035hgs.dtsi"          /* camera sc035hgs*/
+//#include "k510_common/camera-imx385.dtsi"          /* camera imx385*/
+
+#include <dt-bindings/display/drm_mipi_dsi.h>
+
+/* evalution board device tree, include nandflash/emmc/ethphy/sensor/hdmi/pmic etc. */
+
+/ {
+    chosen {
+        bootargs            = "root=/dev/nfs rw nfsroot=10.100.226.63:/home/yangguang/nfs_server/k510_nfsroot ip=10.100.226.221:10.100.226.63:10.100.226.254:255.255.255.0:k510:eth0:off console=ttyS0,115200n8 debug loglevel=7";
+        stdout-path         = "uart0:115200n8";
+    };
+};
+
+&ddr_memory {
+    reg = <0x0 0x00000000 0x0 0xf000000>;  /*0~240M*/
+};
+
+/*DSP: 128M to 136M*/
+    
+&sharem {
+    reg = <0x0 0xf000000 0x0 0x10000000>;  /*240M~496M*/
+};
+
+&serial0 {
+    clock-frequency = <25000000>;
+    reg-shift = <2>;
+    reg-io-width = <4>;
+    no-loopback-test = <1>;
+};
+
+&serial1 {
+    clock-frequency = <25000000>;
+    reg-shift = <2>;
+    reg-io-width = <4>;
+    no-loopback-test = <1>;
+};
+
+
+&iomux {
+//    pinctrl-0 = <&uart0_pins &uart1_pins &mmc0_pins &mmc2_pins &pwm0_pins &pwm1_pins &i2c3_pins &i2s_pins &i2c2_pins &i2c1_pins &i2c4_pins &dvp_pins>;
+
+    uart0_pins: iomux_uart0_pins {
+        pinctrl-k510,pins = <
+            (112) (FUNC_UART0_SIN)
+            (113) (FUNC_UART0_SOUT)
+        >;
+    };
+    uart1_pins: iomux_uart1_pins {
+        pinctrl-k510,pins = <
+            (114) (FUNC_UART1_SIN)
+            (115) (FUNC_UART1_SOUT)
+        >;
+    };
+
+    emac_rgmii_pins: iomux_emac_rgmii_pins {
+        pinctrl-k510,pins = <
+            (35) (FUNC_EMAC_MDC)
+            (36) (FUNC_EMAC_MDIO)
+            (29) (FUNC_EMAC_TX_CLK_OUT)
+            (38) (FUNC_EMAC_TX_CTL)
+            (46) (FUNC_EMAC_TX_D0)
+            (45) (FUNC_EMAC_TX_D1)
+            (44) (FUNC_EMAC_TX_D2)
+            (43) (FUNC_EMAC_TX_D3)
+            (30) (FUNC_EMAC_RX_CLK_IN)
+            (37) (FUNC_EMAC_RX_CTL)
+            (42) (FUNC_EMAC_RX_D0)
+            (41) (FUNC_EMAC_RX_D1)
+            (40) (FUNC_EMAC_RX_D2)
+            (39) (FUNC_EMAC_RX_D3)
+        >;
+    };
+
+    i2s_pins: iomux_i2s_pins {
+        pinctrl-k510,pins = <
+            (100)  (FUNC_AUDIO_INOUT_I2S_SCLK_GATE)
+            (101)  (FUNC_AUDIO_INOUT_I2S_WS)
+            (99) (FUNC_AUDIO_OUT0)
+            (98) (FUNC_AUDIO_IN0)
+        >;
+    };
+
+    /*MIPI_CSI_I2C_SCL, MIPI_CSI_I2C_SDA*/
+    i2c1_pins: iomux_i2c1_pins {
+        pinctrl-k510,pins = <
+            (120) (FUNC_I2C1_SCLK)
+            (121) (FUNC_I2C1_SDA)
+        >;
+    };
+
+    spi0_pins: iomux_spi0_pins {
+        pinctrl-k510,pins = <
+          (86) (FUNC_SPI0_CLK)
+          (87) (FUNC_SPI0_CS)
+          (88) (FUNC_SPI0_D0)
+          (89) (FUNC_SPI0_D1)
+          (90) (FUNC_SPI0_D2)
+          (91) (FUNC_SPI0_D3)
+        >;
+    };
+
+    /*MIPI_DSI_I2C_SCL, MIPI_DSI_I2C_SDA*/
+    i2c2_pins: iomux_i2c2_pins {
+        pinctrl-k510,pins = <
+            (103) (FUNC_I2C2_SCLK)
+            (102) (FUNC_I2C2_SDA)
+        >;
+    };
+    
+    /*IIC_SDA, IIC_SCL*/
+    i2c3_pins: iomux_i2c3_pins {
+        pinctrl-k510,pins = <
+            (116) (FUNC_I2C3_SDA)
+            (117) (FUNC_I2C3_SCLK)
+        >;
+    };
+    
+    /*I2C_1V8_SCL1, I2C_1V8_SDA1 CSI*/
+    i2c4_pins: iomux_i2c4_pins {
+        pinctrl-k510,pins = <
+            (48) (FUNC_I2C4_SDA)
+            (47) (FUNC_I2C4_SCLK)
+        >;
+    };
+
+    dvp_pins:iomux_dvp_pins{
+        pinctrl-k510,pins = <
+            (51) (FUNC_DVP_D4   )
+            (52) (FUNC_DVP_D5   )
+            (53) (FUNC_DVP_D6   )
+            (54) (FUNC_DVP_D7   )
+            (55) (FUNC_DVP_D8   )
+            (56) (FUNC_DVP_D9   )
+            (57) (FUNC_DVP_D10  )
+            (58) (FUNC_DVP_D11  )
+            (59) (FUNC_DVP_D12  )
+            (60) (FUNC_DVP_D13  )
+            (61) (FUNC_DVP_D14  )
+            (62) (FUNC_DVP_D15  )
+            (63) (FUNC_DVP_VSYNC)
+            (64) (FUNC_DVP_HREF )
+            (66) (FUNC_DVP_PCLK )
+        >;
+    };
+
+    gpio_pins: iomux_gpio_pins {
+        pinctrl-k510,pins = <
+
+            (75) (FUNC_GPIO5) /*HP_INSERT_DET*/
+
+            (105) (FUNC_GPIO10) /*TOUCH_RST*/
+            (104) (FUNC_GPIO12) /*TOUCH_INT*/
+
+            (32) (FUNC_GPIO15) /*RSTN*/
+            (21) (FUNC_GPIO16) /*USB_OTG_EN*/
+
+            (122) (FUNC_GPIO20) /*backlight*/
+            (107) (FUNC_GPIO19) /*DSI_D_RST*/
+        >;
+    };
+
+    pwm0_pins: iomux_pwm0_pins {
+        pinctrl-k510,pins = <
+            (126) (FUNC_PWM_PINS_1_IO_PINS_PWM_1_O_OVAL)  
+        >;
+    };
+
+    pwm1_pins: iomux_pwm1_pins {
+        pinctrl-k510,pins = <
+            (127) (FUNC_PWM_PINS_1_IO_PINS_PWM_5_O_OVAL)    
+        >;
+    };
+
+};
+
+&pwm0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pwm0_pins>;
+    #pwm-cells = <3>;
+};
+
+&noc_bus {
+    backlight: backlight {
+        status = "okay";
+        compatible = "pwm-backlight";
+        pwms = <&pwm0 0 50000 0>;
+        brightness-levels = <
+                95  95  95  95  95  95  95  95
+                95  95  95  95  95  95  95  95
+                95  95  95  95  95  95  95  95
+                95  95  95  95  95  95  95  95
+                95  95  95  95  95  95  95  95
+                95  95  95  95  95  95  95  95
+                95  95  95  95  95  95  95  95
+                95  95  95  95  95  95  95  95
+                95  95  95  95  95  95  95  95
+                95  95  95  95  95  95  95  95
+                95  95  95  95  95  95  95  95
+                88  89  90  91  92  93  94  95
+                96  97  98  99 100 101 102 103
+                104 105 106 107 108 109 110 111
+                112 113 114 115 116 117 118 119
+                120 121 122 123 124 125 126 127
+                128 129 130 131 132 133 134 135
+                136 137 138 139 140 141 142 143
+                144 145 146 147 148 149 150 151
+                152 153 154 155 156 157 158 159
+                160 161 162 163 164 165 166 167
+                168 169 170 171 172 173 174 175
+                176 177 178 179 180 181 182 183
+                184 185 186 187 188 189 190 191
+                192 193 194 195 196 197 198 199
+                200 201 202 203 204 205 206 207
+                208 209 210 211 212 213 214 215
+                216 217 218 219 220 221 222 223
+                224 225 226 227 228 229 230 231
+                232 233 234 235 236 237 238 239
+                240 241 242 243 244 245 246 247
+                248 249 250 251 252 253 254 255
+        >;
+        default-brightness-level = <200>;
+    };
+};
+
+&serial0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&uart0_pins>;
+
+};
+
+&serial1 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&uart1_pins>;
+};
+
+&emac {
+    status = "disable";
+    phy-mode = "rgmii";
+    pinctrl-names = "default";
+    pinctrl-0 = <&emac_rgmii_pins>;
+};
+
+
+&i2c0 {
+    status = "disable";
+};
+
+&i2c1 {
+    status = "disable";
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2c1_pins>;
+};
+
+&i2c3 {
+    status = "okay";
+    #address-cells  = <1>;
+    #size-cells     = <0>;
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2c3_pins>;
+
+    gt911: touchscreen@5d {
+	compatible = "goodix,gt911";
+	reg = <0x5d>;
+
+	interrupt-parent = <&porta>;
+    interrupts = <12 4>; /*IRQ_TYPE_LEVEL_HIGH*/
+	irq-gpios = <&porta 12 GPIO_ACTIVE_HIGH>;
+	reset-gpios = <&porta 10  GPIO_ACTIVE_HIGH>;
+
+        touchscreen-size-x = <1080>;
+        touchscreen-size-y = <1920>;
+
+        goodix,cfg-group0 = [
+	42 38 04 80 07 05 35 00 01 08
+	28 08 50 32 03 05 00 00 00 00
+	11 11 05 18 1A 1E 14 89 29 0C
+	3D 3F 0C 08 00 00 00 2A 02 2C
+	32 00 00 00 00 03 64 32 00 00
+	00 2D 5A 94 D5 02 00 00 00 04
+	8E 30 00 80 37 00 74 3F 00 69
+	49 00 60 54 00 60 00 00 00 00
+	00 00 00 00 00 00 00 00 00 00
+	00 00 00 00 00 00 00 00 00 00
+	00 00 00 00 00 00 00 00 00 00
+	00 00 18 16 14 12 10 0E 0C 0A
+	08 06 04 02 FF FF 00 00 00 00
+	00 00 00 00 00 00 00 00 00 00
+	00 00 00 02 04 06 08 0A 0F 10
+	12 22 21 20 1F 1E 1D 1C 18 16
+	FF FF FF FF FF FF FF FF 00 00
+	00 00 00 00 00 00 00 00 00 00
+	00 00 00 00 36 01
+        ];
+        status = "okay";
+    };
+};
+
+&sysctl_boot {
+    osc26m: osc26m {
+        #clock-cells                            = <0>;
+        compatible                              = "fixed-clock";
+        clock-frequency                         = <26000000>;
+        clock-accuracy                          = <0>;
+    };
+};
+
+&i2c2 {
+    status = "okay";
+    #address-cells  = <1>;
+    #size-cells     = <0>;
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2c2_pins>;
+
+    nau8822: nau8822@1a {
+        compatible = "nuvoton,nau8822";
+        reg = <0x1a>;
+        clock-names = "mclk";
+        clocks = <&osc26m>;
+        interrupt-parent = <&porta>;
+        interrupts = <5 2>;
+    };
+
+    lt9611: lt9611@3b {
+        compatible = "lontium,lt9611";
+        reg = <0x3b>;
+        reset-gpios = <&porta 15 GPIO_ACTIVE_LOW>;
+    };
+};
+
+&i2c4 {
+    status = "disable";
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2c4_pins>;
+};
+
+&i2c5 {
+    status = "disable";
+};
+
+&i2c6 {
+    status = "disable";
+};
+
+&sdio0 {
+    status    = "okay";
+    bus-width = <8>;
+
+    pinctrl-names = "default";
+    pinctrl-0 = <&mmc0_pins>;
+};
+
+&sdio2 {
+    status    = "okay";                    
+    bus-width = <4>;
+    cap-sd-highspeed;
+    cdns,phy-input-delay-legacy = <15>;
+    cdns,phy-input-delay-sd-highspeed = <15>;
+
+    pinctrl-names = "default";
+    pinctrl-0 = <&mmc2_pins>;
+
+};
+
+
+&spis {
+    status = "disable";
+};
+
+&porta {
+    snps,nr-gpios = <32>;
+};
+
+&gpio {
+    pinctrl-names = "default";
+    pinctrl-0 = <&gpio_pins>;
+};
+
+&isp {
+    status = "okay";
+    compatible = "canaan,k510-isp";
+    reg = <0x0 0x92600000 0x0 0x200000>;
+
+    dsi_en-gpios = <&porta 20 GPIO_ACTIVE_HIGH>;
+    dsi_rest-gpios = <&porta 19 GPIO_ACTIVE_LOW>;
+
+    pinctrl-names = "default";
+    pinctrl-0 = <&dvp_pins>;
+
+};
+
+&isp1 {
+    status = "okay";
+    compatible = "canaan,k510-isp1";
+    reg = <0x0 0x92600000 0x0 0x200000>;
+
+//    dsi_en-gpios = <&pca6416_0 14 GPIO_ACTIVE_HIGH>;
+//    dsi_rest-gpios = <&pca6416_0 15 GPIO_ACTIVE_LOW>;
+
+//    pinctrl-names = "default";
+//    pinctrl-0 = <&dvp_pins>;
+
+};
+
+&mipi_dsi {
+    planel@0 {
+        compatible = "simple-panel-dsi";
+        reg = <0>;
+
+        // backlight = <&backlight>;
+
+        pinctrl-names = "default";
+
+        width-mm = <74>;
+        height-mm = <133>;
+
+        dsi,flags = <(MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
+                              MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_EOT_PACKET)>;
+        dsi,format = <MIPI_DSI_FMT_RGB888>;
+        dsi,lanes = <4>;
+
+	    display-timings {
+            native-mode = <&timing0>;
+            timing0: timing0 {
+                    clock-frequency = <74250000>;
+                    hactive = <1080>;
+                    vactive = <1920>;
+                    hsync-len = <20>;
+                    hfront-porch = <134>;
+                    hback-porch = <20>;
+                    vsync-len = <5>;
+                    vfront-porch = <25>;
+                    vback-porch = <8>;
+                    hsync-active = <0>;
+                    vsync-active = <0>;
+                    de-active = <0>;
+                    pixelclk-active = <0>;
+            };
+
+    };
+
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+
+            port@0 {
+                reg = <0>;
+                panel_in_dsi: endpoint {
+                        remote-endpoint = <&dsi_out_panel>;
+                };
+            };
+        };
+
+    };
+
+    ports {
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        port@1 {
+                reg = <1>;
+                dsi_out_panel: endpoint {
+                        remote-endpoint = <&panel_in_dsi>;
+                };
+        };
+    };
+
+};
+
+&vop {
+    status    = "okay";
+
+};
+
+&display_subsystem {
+
+   status = "okay";
+};
+
+&gnne {
+    compatible = "k510-gnne";
+    reg = <0x0 0x94180000 0x0 0x80000>;
+};
+
+&h264 {
+    compatible = "al,al5r";
+    reg = <0x0 0x92740000 0x0 0x10000>;
+};
+
+&dsp {
+    compatible = "k510-dsp";
+    sysctl-phy-addr = <0x97000000>;
+};
+
+&usb {
+    reg = <0x0 0x93060000 0x0 0x10000>;
+    otg_power_supply-gpios = <&porta 16 GPIO_ACTIVE_HIGH>;
+};
+
+&i2s {
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2s_pins>;
+
+};
+
+/{
+    sound {
+        compatible = "canaan,canaan-audio-nau8822";
+        canaan,model = "CANAAN-I2S";
+        canaan,i2s-controller = <&i2s>;
+        canaan,audio-codec = <&nau8822>;
+    };
+};
+
+&mailbox {
+    #mbox-cells = <1>;
+};
+
+/* 
+ * mboxes = <&mailbox channel_number tx/rx>
+ *          channel_number: 0-15
+ *          rx: 0-7
+ *          tx: 8-15
+ */
+&manage_subsys {
+    mailbox_client: mailbox_client@0 {
+        compatible = "mailbox-client";
+        mboxes =    <&mailbox 0>, <&mailbox 1>, <&mailbox 2>, <&mailbox 3>,
+                    <&mailbox 4>, <&mailbox 5>, <&mailbox 6>, <&mailbox 7>,
+                    <&mailbox 8>, <&mailbox 9>, <&mailbox 10>, <&mailbox 11>,
+                    <&mailbox 12>, <&mailbox 13>, <&mailbox 14>, <&mailbox 15>;
+        mbox-names = "tx_chan_0", "tx_chan_1", "tx_chan_2", "tx_chan_3", 
+                    "tx_chan_4", "tx_chan_5", "tx_chan_6", "tx_chan_7", 
+                    "rx_chan_0", "rx_chan_1", "rx_chan_2", "rx_chan_3", 
+                    "rx_chan_4", "rx_chan_5", "rx_chan_6", "rx_chan_7";                    
+        reg =   <0x1 0x087ffe00 0x0 0x20>, /* cpu2dsp channel 0 */
+                <0x1 0x087ffe20 0x0 0x20>, /* cpu2dsp channel 1 */
+                <0x1 0x087ffe40 0x0 0x20>, /* cpu2dsp channel 2 */
+                <0x1 0x087ffe60 0x0 0x20>, /* cpu2dsp channel 3 */
+                <0x1 0x087ffe80 0x0 0x20>, /* cpu2dsp channel 4 */
+                <0x1 0x087ffea0 0x0 0x20>, /* cpu2dsp channel 5 */
+                <0x1 0x087ffec0 0x0 0x20>, /* cpu2dsp channel 6 */
+                <0x1 0x087ffee0 0x0 0x20>, /* cpu2dsp channel 7 */
+
+                <0x1 0x087fff00 0x0 0x20>, /* dsp2cpu channel 0 */
+                <0x1 0x087fff20 0x0 0x20>, /* dsp2cpu channel 1 */
+                <0x1 0x087fff40 0x0 0x20>, /* dsp2cpu channel 2 */
+                <0x1 0x087fff60 0x0 0x20>, /* dsp2cpu channel 3 */
+                <0x1 0x087fff80 0x0 0x20>, /* dsp2cpu channel 4 */
+                <0x1 0x087fffa0 0x0 0x20>, /* dsp2cpu channel 5 */
+                <0x1 0x087fffc0 0x0 0x20>, /* dsp2cpu channel 6 */
+                <0x1 0x087fffe0 0x0 0x20>; /* dsp2cpu channel 7 */
+    };
+};
